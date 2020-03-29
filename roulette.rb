@@ -1,5 +1,5 @@
 class Game
-  attr_reader :profit, :spending
+  attr_reader :profit, :spending, :bank, :initial_bet
 
   def initialize
     @history = []
@@ -32,7 +32,7 @@ class Game
     p "bet: #{@initial_bet} | bank: #{@bank} | spent: #{@spending}" 
   end
 
-  def run(desired_winnings, silent)
+  def run(silent)
     while true do
       roll
       update_spending
@@ -41,7 +41,7 @@ class Game
       @initial_bet *= 2
       @turn += 1
       @profit = @bank - @spending
-      break if (@profit) >= desired_winnings
+      break if @history.last == "red"
     end
     print_game_outcome unless silent
   end
@@ -51,25 +51,24 @@ class Strategy
   attr_reader :bank, :spending
 
   def initialize
-    @bank = 0
-    @history = []
+    @bank = 1000
     @games_played = 0
     @spending = 0
   end
 
-  def run(times)
+
+  def run(times, amount)
     while @games_played <= times do
       game = Game.new
-      game.run(1000, true)
-      @history << game
-      @bank += game.profit
-      @spending += game.spending
+      game.run(true)
+      p "$#{amount} exceeded" if game.initial_bet > amount
+      @bank -= game.spending
+      @bank += game.bank
       @games_played += 1
     end
   end
 end
 
 strat = Strategy.new
-strat.run(10)
+strat.run(10000000, 100000000)
 p strat.bank
-p strat.spending
